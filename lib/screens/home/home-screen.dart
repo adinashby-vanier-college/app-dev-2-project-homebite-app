@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../restaurant_details/dishes-screen.dart';
 import 'food-card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -45,8 +46,25 @@ class HomeScreen extends StatelessWidget {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
           ),
           const SizedBox(height: 16),
-          ...foodList.map((food) => FoodCard(food: food)).toList(),
-        ],
+          ...foodList.map((food) => GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DishesScreen(item: {
+                    'image': food['image'],
+                    'title': food['title'],
+                    'location': food['label'],
+                    'cookName': food['vendor'],
+                    'rating': food['rating'].toString(),
+                    'reviews': food['reviews'].toString(),
+                    'description': 'Delicious food prepared with care.', // Add a description
+                  }),
+                ),
+              );
+            },
+            child: FoodCard(food: food),
+          )).toList(),        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
