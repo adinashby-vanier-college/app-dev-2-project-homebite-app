@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916015799071",
+    "project_id": "home-bite-e867e",
+    "storage_bucket": "home-bite-e867e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916015799071:android:8b048bbf6d5aae67b8ae2a",
+        "android_client_info": {
+          "package_name": "com.example.home_bite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDV_TykNRpfSLBtMwkZWuYnP7AisWcOr9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

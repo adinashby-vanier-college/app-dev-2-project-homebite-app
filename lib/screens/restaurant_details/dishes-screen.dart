@@ -1,29 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DishesScreen extends StatelessWidget {
   final Map<String, String> item;
+  final Stream<QuerySnapshot> dishesStream = FirebaseFirestore.instance.collection('dishes').snapshots();
 
   DishesScreen({required this.item});
-
-  final List<Map<String, dynamic>> dishes = [
-    {
-      'image': 'assets/images/qabili.png',
-      'name': 'Qabili Plate',
-      'price': '\$10.99',
-      'rating': 4.9,
-      'reviews': 19,
-      'description': 'A traditional Afghan dish made with rice, carrots, and raisins.',
-    },
-    {
-      'image': 'assets/images/kebab.png',
-      'name': 'Antep Plate',
-      'price': '\$12.99',
-      'rating': 4.6,
-      'reviews': 50,
-      'description': 'Delicious grilled kebabs marinated in spices and served with rice.',
-    },
-  ];
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,57 +100,77 @@ class DishesScreen extends StatelessWidget {
                     'Dishes',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16), ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: dishes.length,
-                    itemBuilder: (context, index) {
-                      final dish = dishes[index];
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                              child: Image.asset(
-                                dish['image']!,
-                                width: double.infinity,
-                                height: 180,
-                                fit: BoxFit.cover,
-                              ),
+                  SizedBox(height: 16),
+
+                  StreamBuilder<QuerySnapshot>(
+                    stream: dishesStream,
+                    builder: (context, snapshot){
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error loading data'));
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(child: Text('No dishes available'));
+                      }
+
+                      final dishes = snapshot.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+
+                      return ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: dishes.length,
+                        itemBuilder: (context, index) {
+                          final dish = dishes[index];
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                  child: Image.asset(
+                                    dish['image']!,
+                                    width: double.infinity,
+                                    height: 180,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        dish['name']!,
-                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            dish['name']!,
+                                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            dish['price']!,
+                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
                                       ),
+                                      SizedBox(height: 8),
                                       Text(
-                                        dish['price']!,
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                        dish['description']!,
+                                        style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    dish['description']!,
-                                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       );
                     },
                   ),
