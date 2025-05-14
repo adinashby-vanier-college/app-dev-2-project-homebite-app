@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../restaurant_details/dishes-screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'add-edit-restaurant-screen.dart';
 import 'food-card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -69,6 +70,18 @@ class HomeScreen extends StatelessWidget {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddEditRestaurantScreen(),
+            ),
+          );
+          },
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.teal,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [

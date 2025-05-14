@@ -5,7 +5,7 @@ import 'dish_list_view.dart';
 
 class DishesScreen extends StatelessWidget {
   final Map<String, String> item;
-  
+
   DishesScreen({required this.item});
 
   @override
