@@ -42,25 +42,26 @@ class HomeScreen extends StatelessWidget {
             itemCount: restaurants.length,
             itemBuilder: (context, index) {
               final restaurant = restaurants[index];
-              final food = restaurants[index].data() as Map<String, dynamic>;
+              final restaurantData = restaurants[index].data() as Map<String, dynamic>;
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => DishesScreen(item: {
-                        'image': food['image'],
-                        'title': food['title'],
-                        'location': food['label'],
-                        'cookName': food['vendor'],
-                        'rating': food['rating'].toString(),
-                        'reviews': food['reviews'].toString(),
+                        'restaurantId': restaurant.id,
+                        'image': restaurantData['image'],
+                        'title': restaurantData['title'],
+                        'location': restaurantData['label'],
+                        'cookName': restaurantData['vendor'],
+                        'rating': restaurantData['rating'].toString(),
+                        'reviews': restaurantData['reviews'].toString(),
                         'description': 'Delicious food prepared with care.', // Add a description
                       }),
                     ),
                   );
                 },
-                child: FoodCard(food: food),
+                child: FoodCard(food: restaurantData),
                 onLongPress: () async {
                     await showRestaurantDeleteDialog(context, restaurant.id);
                 },

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'dish_list_view.dart';
+
 class DishesScreen extends StatelessWidget {
   final Map<String, String> item;
-  final Stream<QuerySnapshot> dishesStream = FirebaseFirestore.instance.collection('dishes').snapshots();
-
+  
   DishesScreen({required this.item});
 
   @override
   Widget build(BuildContext context) {
+    final Stream<QuerySnapshot> dishesStream = FirebaseFirestore.instance
+        .collection('dishes')
+        .where('restaurantId', isEqualTo: '${item['restaurantId']}')
+        .snapshots();
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -117,61 +123,7 @@ class DishesScreen extends StatelessWidget {
 
                       final dishes = snapshot.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
-                      return ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: dishes.length,
-                        itemBuilder: (context, index) {
-                          final dish = dishes[index];
-                          return Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            margin: EdgeInsets.symmetric(vertical: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                                  child: Image.asset(
-                                    dish['image']!,
-                                    width: double.infinity,
-                                    height: 180,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            dish['name']!,
-                                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                          ),
-                                          Text(
-                                            dish['price']!,
-                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        dish['description']!,
-                                        style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
+                      return DishList(dishes: dishes);
                     },
                   ),
                 ],
