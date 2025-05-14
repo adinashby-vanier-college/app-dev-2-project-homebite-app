@@ -41,6 +41,7 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: restaurants.length,
             itemBuilder: (context, index) {
+              final restaurant = restaurants[index];
               final food = restaurants[index].data() as Map<String, dynamic>;
               return GestureDetector(
                 onTap: () {
@@ -60,35 +61,13 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
                 child: FoodCard(food: food),
+                onLongPress: () async {
+                    await showRestaurantDeleteDialog(context, restaurant.id);
+                },
               );
             },
           );
         },
-        // children: [
-        //   const Text(
-        //     'Available Later Today',
-        //     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
-        //   ),
-        //   const SizedBox(height: 16),
-        //   ...restaurants.map((food) => GestureDetector(
-        //     onTap: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(
-        //           builder: (context) => DishesScreen(item: {
-        //             'image': food['image'],
-        //             'title': food['title'],
-        //             'location': food['label'],
-        //             'cookName': food['vendor'],
-        //             'rating': food['rating'].toString(),
-        //             'reviews': food['reviews'].toString(),
-        //             'description': 'Delicious food prepared with care.', // Add a description
-        //           }),
-        //         ),
-        //       );
-        //     },
-        //     child: FoodCard(food: food),
-        //   )).toList(),        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -102,6 +81,33 @@ class HomeScreen extends StatelessWidget {
         showSelectedLabels: false,
         showUnselectedLabels: false,
       ),
+    );
+  }
+
+  Future<void> showRestaurantDeleteDialog(BuildContext context, String restaurantId) async {
+    final confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Restaurant'),
+        content: const Text('Are you sure you want to delete this restaurant?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == null || !confirm) return;
+
+    await FirebaseFirestore.instance.collection('restaurants').doc(restaurantId).delete();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Restaurant deleted')),
     );
   }
 }

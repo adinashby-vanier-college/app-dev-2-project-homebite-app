@@ -6,7 +6,7 @@ class DishesScreen extends StatelessWidget {
   final Stream<QuerySnapshot> dishesStream = FirebaseFirestore.instance.collection('dishes').snapshots();
 
   DishesScreen({required this.item});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
