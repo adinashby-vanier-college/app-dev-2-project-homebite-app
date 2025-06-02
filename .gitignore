@@ -6,3 +6,7 @@
 .DS_Store
 build/
 .gradle/
+.flutter-plugins-dependencies
+.idea/
+ios/
+pubspec.lock
