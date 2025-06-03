@@ -7,7 +7,7 @@ class AddEditRestaurantScreen extends StatefulWidget {
   final String? restaurantId;
   final Map<String, dynamic>? existingData;
 
-  AddEditRestaurantScreen({this.restaurantId, this.existingData});
+  const AddEditRestaurantScreen({super.key, this.restaurantId, this.existingData});
 
   @override
   _AddEditRestaurantScreenState createState() => _AddEditRestaurantScreenState();

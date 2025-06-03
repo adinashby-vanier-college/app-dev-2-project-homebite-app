@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'home-bite-e867e.firebasestorage.app',
     measurementId: 'G-KBG38K178G',
   );
+
 }

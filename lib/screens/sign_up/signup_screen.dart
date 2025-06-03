@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -46,10 +47,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const Text(
                 'HomeBite',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 48),
 
@@ -61,8 +59,10 @@ class _SignupScreenState extends State<SignupScreen> {
                   hintText: 'Email address',
                   filled: true,
                   fillColor: Colors.grey.shade300,
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
@@ -79,18 +79,24 @@ class _SignupScreenState extends State<SignupScreen> {
                   hintText: 'Password',
                   filled: true,
                   fillColor: Colors.grey.shade300,
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
                   ),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed:
+                        () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                   ),
                 ),
               ),
@@ -104,18 +110,21 @@ class _SignupScreenState extends State<SignupScreen> {
                   hintText: 'Confirm Password',
                   filled: true,
                   fillColor: Colors.grey.shade300,
-                  contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: BorderSide.none,
                   ),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () =>
-                        setState(() => _obscureConfirm = !_obscureConfirm),
+                    icon: Icon(
+                      _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed:
+                        () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
                 ),
               ),
@@ -126,18 +135,21 @@ class _SignupScreenState extends State<SignupScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0E4743),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   final email = _emailController.text.trim();
                   final pass = _passController.text;
                   final confirm = _confirmController.text;
                   if (email.isEmpty || pass.isEmpty || confirm.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content:
-                          Text('Please fill out all registration fields')),
+                        content: Text(
+                          'Please fill out all registration fields',
+                        ),
+                      ),
                     );
                     return;
                   }
@@ -147,10 +159,32 @@ class _SignupScreenState extends State<SignupScreen> {
                     );
                     return;
                   }
-                  // TODO: your sign-up logic here
+                  try {
+                    final email = _emailController.text.trim();
+                    final password = _passController.text.trim();
+
+                    // Create a new user with email and password
+                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                      email: email,
+                      password: password,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Account created successfully')),
+                    );
+
+                    // Navigate to another screen if needed
+                    Navigator.of(context).pushNamed('/home');
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Sign-up failed: ${e.toString()}')),
+                    );
+                  }
                 },
-                child: const Text('Create Your Account',
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: const Text(
+                  'Create Your Account',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
               const SizedBox(height: 8),
 
@@ -181,12 +215,29 @@ class _SignupScreenState extends State<SignupScreen> {
                 label: const Text('Continue with Apple'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   side: const BorderSide(color: Colors.grey),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                onPressed: () {
-                  // TODO: apple signup
+                onPressed: () async {
+                  // try {
+                  //   final credential =
+                  //       await SignInWithApple.getAppleIDCredential(
+                  //         scopes: [
+                  //           AppleIDAuthorizationScopes.email,
+                  //           AppleIDAuthorizationScopes.fullName,
+                  //         ],
+                  //       );
+                  //
+                  //   // Handle the credential (e.g., send it to your backend for authentication)
+                  //   print('User email: ${credential.email}');
+                  //   print(
+                  //     'User name: ${credential.givenName} ${credential.familyName}',
+                  //   );
+                  // } catch (error) {
+                  //   print('Apple Sign-In failed: $error');
+                  // }
                 },
               ),
               const SizedBox(height: 16),
@@ -195,12 +246,24 @@ class _SignupScreenState extends State<SignupScreen> {
                 label: const Text('Continue with Google'),
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24)),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   side: const BorderSide(color: Colors.grey),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                onPressed: () {
-                  // TODO: google signup
+                onPressed: () async {
+                  // try {
+                  //   final GoogleSignIn googleSignIn = GoogleSignIn();
+                  //   final GoogleSignInAccount? account = await googleSignIn.signIn();
+
+                  //   if (account != null) {
+                  //     print('User email: ${account.email}');
+                  //     print('User name: ${account.displayName}');
+                  //     // Handle the account (e.g., send it to your backend for authentication)
+                  //   }
+                  // } catch (error) {
+                  //   print('Google Sign-In failed: $error');
+                  // }
                 },
               ),
 

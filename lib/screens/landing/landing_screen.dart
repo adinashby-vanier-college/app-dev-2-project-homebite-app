@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:home_bite/utils/routes.dart';
-import 'package:home_bite/utils/routes.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -11,11 +9,22 @@ class LandingScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFFDF1EE),
       body: Stack(
         children: [
-          // Background image
+          // Background image with precaching
           Positioned.fill(
             child: Image.asset(
-              'assets/images/screens/landing.png', // your image path
+              'assets/images/screens/landing.png',
               fit: BoxFit.cover,
+              cacheWidth: MediaQuery.of(context).size.width.round(),
+              cacheHeight: MediaQuery.of(context).size.height.round(),
+              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded) return child;
+                return AnimatedOpacity(
+                  opacity: frame == null ? 0 : 1,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOut,
+                  child: child,
+                );
+              },
             ),
           ),
 
@@ -35,10 +44,7 @@ class LandingScreen extends StatelessWidget {
                   const Text(
                     'No Cooking,\nJust eating',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -61,7 +67,10 @@ class LandingScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).pushNamed('/signup');
                       },
-                      child: const Text('Get Started', style: TextStyle(fontSize: 16, color: Colors.white)),
+                      child: const Text(
+                        'Get Started',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
