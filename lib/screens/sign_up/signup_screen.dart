@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -11,10 +12,13 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _confirmController = TextEditingController();
+
+  final AuthService _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ─── Top “Sign In” Link ───
+              // ─── Top "Sign In" Link ───
               Row(
                 children: [
                   const Spacer(),
@@ -139,58 +143,111 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () async {
-                  final email = _emailController.text.trim();
-                  final pass = _passController.text;
-                  final confirm = _confirmController.text;
-                  if (email.isEmpty || pass.isEmpty || confirm.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Please fill out all registration fields',
+                onPressed:
+                    _isLoading
+                        ? null
+                        : () async {
+                          setState(() => _isLoading = true);
+                          try {
+                            final email = _emailController.text.trim();
+                            final pass = _passController.text;
+                            final confirm = _confirmController.text;
+
+                            if (email.isEmpty ||
+                                pass.isEmpty ||
+                                confirm.isEmpty) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please fill out all registration fields',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            if (pass != confirm) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Passwords do not match'),
+                                ),
+                              );
+                              return;
+                            }
+
+                            // Use AuthService to sign up
+                            await _authService.signUp(
+                              email: email,
+                              password: pass,
+                            );
+
+                            // Send email verification
+                            await _authService.sendEmailVerification();
+
+                            if (!mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Account created successfully! Please check your email for verification.',
+                                ),
+                                duration: Duration(seconds: 4),
+                              ),
+                            );
+
+                            // Navigate to home page after successful signup
+                            if (!mounted) return;
+                            Navigator.of(context).pushReplacementNamed('/home');
+                          } on FirebaseAuthException catch (e) {
+                            String errorMessage = 'Sign-up failed';
+
+                            if (e.code == 'weak-password') {
+                              errorMessage = 'The password is too weak';
+                            } else if (e.code == 'email-already-in-use') {
+                              errorMessage = 'This email is already registered';
+                            } else if (e.code == 'invalid-email') {
+                              errorMessage = 'The email address is not valid';
+                            }
+
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(errorMessage)),
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Sign-up failed: ${e.toString()}',
+                                ),
+                              ),
+                            );
+                          } finally {
+                            setState(() => _isLoading = false);
+                          }
+                        },
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                        : const Text(
+                          'Create Your Account',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
-                      ),
-                    );
-                    return;
-                  }
-                  if (pass != confirm) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Passwords do not match')),
-                    );
-                    return;
-                  }
-                  try {
-                    final email = _emailController.text.trim();
-                    final password = _passController.text.trim();
-
-                    // Create a new user with email and password
-                    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                      email: email,
-                      password: password,
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Account created successfully')),
-                    );
-
-                    // Navigate to another screen if needed
-                    Navigator.of(context).pushNamed('/home');
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Sign-up failed: ${e.toString()}')),
-                    );
-                  }
-                },
-                child: const Text(
-                  'Create Your Account',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
               ),
               const SizedBox(height: 8),
 
               // ─── Terms of Use ───
               const Text(
-                'By joining I agree to HomeBite’s terms of use',
+                "By joining I agree to HomeBite's terms of use",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.black54),
               ),
@@ -269,7 +326,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
               const SizedBox(height: 24),
 
-              // ─── Bottom “Sign In” Prompt ───
+              // ─── Bottom "Sign In" Prompt ───
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
