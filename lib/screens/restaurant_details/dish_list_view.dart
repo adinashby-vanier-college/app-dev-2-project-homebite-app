@@ -214,14 +214,7 @@ class DishList extends StatelessWidget {
             ),
       );
     } else {
-      return Container(
-        width: double.infinity,
-        height: 180,
-        color: Colors.grey[300],
-        child: const Center(
-          child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
-        ),
-      );
+      return Image.asset('assets/images/kebab.png');
     }
   }
 
@@ -473,12 +466,7 @@ class _DishDetailsSheetState extends State<DishDetailsSheet> {
             ),
       );
     } else {
-      return Container(
-        color: Colors.grey[300],
-        child: const Center(
-          child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
-        ),
-      );
+      return Image.asset('assets/images/qabili.png');
     }
   }
 
