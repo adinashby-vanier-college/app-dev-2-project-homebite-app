@@ -214,7 +214,7 @@ class DishList extends StatelessWidget {
             ),
       );
     } else {
-      return Image.asset('assets/images/kebab.png');
+      return Image.asset(dish['image'] ?? 'assets/images/kebab.png');
     }
   }
 
@@ -466,7 +466,7 @@ class _DishDetailsSheetState extends State<DishDetailsSheet> {
             ),
       );
     } else {
-      return Image.asset('assets/images/qabili.png');
+      return Image.asset(widget.dish['image'] ?? 'assets/images/kebab.png');
     }
   }
 
