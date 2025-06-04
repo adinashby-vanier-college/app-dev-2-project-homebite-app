@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/order_service.dart';
+import 'order_details_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -22,6 +23,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: const Text('My Orders', style: TextStyle(color: Colors.black)),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -93,7 +95,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
             );
           }
 
+          // Get orders and sort them by date (newest first)
           final orders = snapshot.data!.docs;
+          orders.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+
+            final aDate = aData['orderDate'] as Timestamp?;
+            final bDate = bData['orderDate'] as Timestamp?;
+
+            if (aDate == null && bDate == null) return 0;
+            if (aDate == null) return 1;
+            if (bDate == null) return -1;
+
+            return bDate.compareTo(aDate); // Descending order (newest first)
+          });
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -105,6 +121,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   DateTime.now();
               final formattedDate =
                   '${orderDate.day}/${orderDate.month}/${orderDate.year}';
+
+              // Get the correct total amount
+              final total = order['total'] ?? 0.0;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -158,7 +177,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Total: \$${order['totalAmount']?.toStringAsFixed(2) ?? '0.00'}',
+                        'Total: \$${total.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -168,7 +187,17 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {
-                          // View order details
+                          // Navigate to order details screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => OrderDetailsScreen(
+                                    orderData: order,
+                                    orderId: orders[index].id,
+                                  ),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,

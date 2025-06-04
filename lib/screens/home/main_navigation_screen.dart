@@ -8,14 +8,16 @@ import '../search/search_screen.dart';
 import 'home_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  final int initialIndex;
+
+  const MainNavigationScreen({super.key, this.initialIndex = 0});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -24,6 +26,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const CartScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,5 +61,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         showUnselectedLabels: true,
       ),
     );
+  }
+
+  // Method to change the current index from outside
+  void setCurrentIndex(int index) {
+    if (index >= 0 && index < _screens.length) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
   }
 }

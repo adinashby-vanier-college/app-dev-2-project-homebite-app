@@ -99,6 +99,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFDF1EE),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
@@ -242,7 +243,10 @@ class _SearchScreenState extends State<SearchScreen> {
             child: GestureDetector(
               onTap:
                   () => _navigateToDishes(context, restaurant, restaurantData),
-              child: FoodCard(food: restaurantData),
+              child: FoodCard(
+                food: restaurantData,
+                restaurantId: restaurant.id,
+              ),
             ),
           );
         },

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../services/cart_service.dart';
+
 class DishDetailsScreen extends StatefulWidget {
   const DishDetailsScreen({super.key});
 
@@ -22,6 +24,7 @@ class _DishDetailsScreenState extends State<DishDetailsScreen> {
     {'name': 'Dried mint topping', 'price': 1.00},
   ];
   final Set<int> _selectedAddOns = {};
+  bool _isAddingToCart = false;
 
   double get _basePrice => 12.00;
   double get _totalPrice {
@@ -175,11 +178,58 @@ class _DishDetailsScreenState extends State<DishDetailsScreen> {
 
       // ────────── bottom add-to-cart bar ──────────
       bottomSheet: GestureDetector(
-        onTap: () {
-          // Add item to cart
-          // Then navigate to cart screen
-          Navigator.pushNamed(context, '/cart');
-        },
+        onTap:
+            _isAddingToCart
+                ? null
+                : () async {
+                  // Set loading state
+                  setState(() {
+                    _isAddingToCart = true;
+                  });
+
+                  // Show loading indicator
+                  final scaffold = ScaffoldMessenger.of(context);
+                  try {
+                    // Get selected add-ons
+                    final selectedAddOnsList =
+                        _selectedAddOns.map((index) {
+                          final addon = _addOns[index];
+                          return {
+                            'name': addon['name'] as String,
+                            'price': addon['price'] as double,
+                          };
+                        }).toList();
+
+                    // Add item to cart using CartService
+                    await CartService.addDishToCart(
+                      dishId: 'mantuu', // Replace with actual dish ID
+                      name: 'Mantuu/Ashaak',
+                      price: _basePrice,
+                      quantity: 1,
+                      addOns: selectedAddOnsList,
+                    );
+
+                    // Show success message
+                    scaffold.showSnackBar(
+                      const SnackBar(
+                        content: Text('Added to cart successfully'),
+                      ),
+                    );
+
+                    // Navigate to cart screen
+                    Navigator.pushNamed(context, '/cart');
+                  } catch (e) {
+                    // Show error message
+                    scaffold.showSnackBar(SnackBar(content: Text('Error: $e')));
+                  } finally {
+                    // Reset loading state
+                    if (mounted) {
+                      setState(() {
+                        _isAddingToCart = false;
+                      });
+                    }
+                  }
+                },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: const BoxDecoration(
@@ -188,10 +238,19 @@ class _DishDetailsScreenState extends State<DishDetailsScreen> {
           ),
           child: Row(
             children: [
-              Text(
-                'Add 1 to Cart',
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
+              _isAddingToCart
+                  ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                  : Text(
+                    'Add 1 to Cart',
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
               const Spacer(),
               Text(
                 '\$${_totalPrice.toStringAsFixed(2)}',

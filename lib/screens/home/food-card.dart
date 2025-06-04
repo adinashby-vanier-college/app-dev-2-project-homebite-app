@@ -1,9 +1,114 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class FoodCard extends StatelessWidget {
-  final Map<String, dynamic> food;
+import '../../services/restaurant_service.dart';
 
-  const FoodCard({super.key, required this.food});
+class FoodCard extends StatefulWidget {
+  final Map<String, dynamic> food;
+  final String restaurantId;
+  final Function(bool isFavorite)? onFavoriteChanged;
+
+  const FoodCard({
+    super.key,
+    required this.food,
+    required this.restaurantId,
+    this.onFavoriteChanged,
+  });
+
+  @override
+  State<FoodCard> createState() => _FoodCardState();
+}
+
+class _FoodCardState extends State<FoodCard> {
+  bool _isFavorite = false;
+  bool _isLoading = true;
+  final String? _userId = FirebaseAuth.instance.currentUser?.uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFavorite();
+  }
+
+  Future<void> _checkIfFavorite() async {
+    if (_userId == null) {
+      setState(() {
+        _isFavorite = false;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final isFavorite = await RestaurantService.isFavorite(
+        _userId,
+        widget.restaurantId,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isFavorite = isFavorite;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFavorite = false;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_userId == null) {
+      // Show login dialog or navigate to login screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login to add favorites'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (_isFavorite) {
+        await RestaurantService.removeFromFavorites(
+          _userId,
+          widget.restaurantId,
+        );
+      } else {
+        await RestaurantService.addToFavorites(_userId, widget.restaurantId);
+      }
+
+      if (mounted) {
+        setState(() {
+          _isFavorite = !_isFavorite;
+          _isLoading = false;
+        });
+
+        if (widget.onFavoriteChanged != null) {
+          widget.onFavoriteChanged!(_isFavorite);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +125,35 @@ class FoodCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-                child: _buildOptimizedImage(food['image']),
+                child: _buildOptimizedImage(widget.food['image']),
               ),
               Positioned(
                 right: 12,
                 top: 12,
                 child: CircleAvatar(
                   backgroundColor: Colors.white,
-                  child: Icon(Icons.favorite_border, color: Colors.red),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.red,
+                            ),
+                          )
+                          : IconButton(
+                            icon: Icon(
+                              _isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: _toggleFavorite,
+                          ),
                 ),
               ),
               Positioned(
@@ -36,7 +162,7 @@ class FoodCard extends StatelessWidget {
                 child: CircleAvatar(
                   backgroundColor: Colors.white,
                   child: Text(
-                    food['label'],
+                    widget.food['label'] ?? '',
                     style: const TextStyle(fontSize: 10),
                   ),
                 ),
@@ -49,7 +175,7 @@ class FoodCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  food['title'],
+                  widget.food['title'] ?? '',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -62,14 +188,16 @@ class FoodCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        food['vendor'],
+                        widget.food['vendor'] ?? '',
                         style: const TextStyle(color: Colors.grey),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const Icon(Icons.star, color: Colors.amber, size: 18),
-                    Text('${food['rating']} (${food['reviews']})'),
+                    Text(
+                      '${widget.food['rating'] ?? 0} (${widget.food['reviews'] ?? 0})',
+                    ),
                   ],
                 ),
               ],
@@ -81,7 +209,15 @@ class FoodCard extends StatelessWidget {
   }
 
   // Helper method to determine the image type and load it optimally
-  Widget _buildOptimizedImage(String imagePath) {
+  Widget _buildOptimizedImage(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) {
+      return Container(
+        height: 180,
+        color: Colors.grey[300],
+        child: const Icon(Icons.restaurant),
+      );
+    }
+
     // Check if it's a network image (URL)
     if (imagePath.startsWith('http')) {
       return Image.network(

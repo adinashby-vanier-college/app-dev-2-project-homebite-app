@@ -113,7 +113,25 @@ class HomeScreen extends StatelessWidget {
               onTap:
                   () => _navigateToDishes(context, restaurant, restaurantData),
               onLongPress: () => _showDeleteDialog(context, restaurant.id),
-              child: FoodCard(food: restaurantData),
+              child: FoodCard(
+                food: restaurantData,
+                restaurantId: restaurant.id,
+                onFavoriteChanged: (isFavorite) {
+                  // Optional: Show a snackbar or perform other actions
+                  final message =
+                      isFavorite
+                          ? '${restaurantData['title']} added to favorites'
+                          : '${restaurantData['title']} removed from favorites';
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(message),
+                      backgroundColor: isFavorite ? Colors.green : Colors.grey,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
             ),
           );
         },

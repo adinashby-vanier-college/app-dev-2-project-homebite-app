@@ -8,10 +8,7 @@ class OrderService {
 
   // Get all orders for a user
   static Stream<QuerySnapshot> getUserOrdersStream(String userId) {
-    return _ordersCollection
-        .where('userId', isEqualTo: userId)
-        .orderBy('orderDate', descending: true)
-        .snapshots();
+    return _ordersCollection.where('userId', isEqualTo: userId).snapshots();
   }
 
   // Get orders by status for a user
@@ -22,7 +19,6 @@ class OrderService {
     return _ordersCollection
         .where('userId', isEqualTo: userId)
         .where('status', isEqualTo: status)
-        .orderBy('orderDate', descending: true)
         .snapshots();
   }
 
@@ -73,7 +69,6 @@ class OrderService {
   static Stream<QuerySnapshot> getRestaurantOrdersStream(String restaurantId) {
     return _ordersCollection
         .where('restaurantId', isEqualTo: restaurantId)
-        .orderBy('orderDate', descending: true)
         .snapshots();
   }
 
@@ -85,7 +80,6 @@ class OrderService {
     return _ordersCollection
         .where('restaurantId', isEqualTo: restaurantId)
         .where('status', isEqualTo: status)
-        .orderBy('orderDate', descending: true)
         .snapshots();
   }
 }

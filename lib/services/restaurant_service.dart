@@ -85,4 +85,49 @@ class RestaurantService {
         .where('restaurantId', isEqualTo: restaurantId)
         .snapshots();
   }
+
+  // Get favorite restaurants for a user
+  static Stream<QuerySnapshot> getFavoriteRestaurants(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .snapshots();
+  }
+
+  // Add restaurant to favorites
+  static Future<void> addToFavorites(String userId, String restaurantId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .doc(restaurantId)
+        .set({
+          'restaurantId': restaurantId,
+          'addedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  // Remove restaurant from favorites
+  static Future<void> removeFromFavorites(String userId, String restaurantId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('favorites')
+        .doc(restaurantId)
+        .delete();
+  }
+
+  // Check if restaurant is in favorites
+  static Future<bool> isFavorite(String userId, String restaurantId) async {
+    final docSnapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('favorites')
+            .doc(restaurantId)
+            .get();
+
+    return docSnapshot.exists;
+  }
 }
